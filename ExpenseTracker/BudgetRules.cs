@@ -93,14 +93,14 @@ public static class BudgetRules
     {
         // TODO
         var threshold = monthlyLimit * NearLimitFraction;
-
+        if(monthlyLimit<=0) throw new InvalidExpenseException("Invalid monthly limit!");
         return remaining switch
         {
-            < 0 => $"Budget: {FormatCurrency(remaining)} remaining of {FormatCurrency(monthlyLimit)} -> OVER BUDGET",
-            var x when x < threshold => $"Budget: {FormatCurrency(remaining)} remaining of {FormatCurrency(monthlyLimit)} -> Almost out",
+            <0 => $"OVER BUDGET",
+            var x when x < threshold => $"Almost out",
             _ => "On track"
-
         };
+
     }
 
     /// <summary>
