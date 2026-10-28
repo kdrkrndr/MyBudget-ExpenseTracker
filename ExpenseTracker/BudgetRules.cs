@@ -92,18 +92,26 @@ public static class BudgetRules
     public static string BudgetStatus(decimal remaining, decimal monthlyLimit)
     {
         // TODO
-        throw new NotImplementedException();
+        var threshold = monthlyLimit * NearLimitFraction;
+
+        return remaining switch
+        {
+            < 0 => $"Budget: {FormatCurrency(remaining)} remaining of {FormatCurrency(monthlyLimit)} -> OVER BUDGET",
+            var x when x < threshold => $"Budget: {FormatCurrency(remaining)} remaining of {FormatCurrency(monthlyLimit)} -> Almost out",
+            _ => "On track"
+
+        };
     }
 
     /// <summary>
     /// Formats an amount as currency using the default "$" symbol.
     /// Implement this as an expression-bodied member that calls the overload.
     /// </summary>
-    public static string FormatCurrency(decimal amount)
-    {
+    public static string FormatCurrency(decimal amount) => FormatCurrency(amount, "$");
+    //{
         // TODO: return FormatCurrency(amount, "$");
-        throw new NotImplementedException();
-    }
+        //return FormatCurrency(amount, "$");
+    //}
 
     /// <summary>
     /// Formats an amount as currency using the given symbol, e.g. "$62.40".
@@ -111,7 +119,7 @@ public static class BudgetRules
     public static string FormatCurrency(decimal amount, string currencySymbol)
     {
         // TODO: use a "0.00" format string
-        throw new NotImplementedException();
+        return $"{currencySymbol}{amount:F2}";
     }
 }
 
