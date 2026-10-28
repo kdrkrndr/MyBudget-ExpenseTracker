@@ -21,6 +21,53 @@
 // =====================================================================
 using ExpenseTracker;
 
-Console.WriteLine("MyBudget — TODO: build the interactive menu UI (see the brief).");
-
 // Delete the line above and implement the application here.
+
+Console.WriteLine("""
+    **********************************************
+             MyBudget Expense Tracker
+    **********************************************
+    """);
+
+
+string? selection; 
+
+
+do
+{
+    Console.WriteLine("  1) Add an expense   2) View summary   3) Set monthly budget   4) Exit");
+    selection = Console.ReadLine();
+    switch (selection)
+    {
+        case "1": Console.WriteLine("1) Add an expense");
+            break;
+        case "2": Console.WriteLine("2) View summary"); 
+            break;
+        case "3": SetBudget();
+            break;
+        case "4": Console.WriteLine("4) Exit");
+            break;
+        default:  Console.WriteLine("Invalid selection. Please choose 1-4.");
+            break;
+    }
+    ;
+}
+while (selection!="4" && selection != null);
+
+static void SetBudget()
+{
+    Console.WriteLine("3) Set monthly budget");
+
+    string enteredValue= Console.ReadLine();
+
+    if (decimal.TryParse(enteredValue, out decimal budget))
+    { 
+        BudgetRules.ValidateAmount(budget);
+        string formattedBudget = BudgetRules.FormatCurrency(budget);
+
+        Console.WriteLine($"Monthly Budget: {budget}");
+        Console.WriteLine($"Budget set to : {formattedBudget}");
+        Console.WriteLine($"Budget: {formattedBudget} reamining of {formattedBudget} -> {BudgetRules.BudgetStatus(budget,budget)}");
+
+    }
+};
