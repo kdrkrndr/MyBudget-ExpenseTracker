@@ -44,9 +44,13 @@ decimal otherTotal = 0m;
 
 do
 {
+    Console.WriteLine();
+    Console.WriteLine("========== Menu ==========");
     Console.WriteLine("  1) Add an expense   2) View summary   3) Set monthly budget   4) Exit");
     Console.Write(">");
     selection = Console.ReadLine();
+    Console.WriteLine();
+
     switch (selection)
     {
         case "1": 
@@ -121,7 +125,7 @@ void ViewSummary()
 void SetBudget()
 {
     Console.WriteLine();
-    Console.WriteLine("3) Set monthly budget");
+    Console.WriteLine("========== Set Monthly Budget ==========");
 
     while (true)
     {
@@ -155,16 +159,14 @@ void SetBudget()
         {
             Console.WriteLine(ex.Message);
         }
-
-
+        Console.WriteLine();
 
     }
 }
 
 void AddExpense()
 {
-    Console.WriteLine();
-    Console.WriteLine("1) Add an expense");
+    Console.WriteLine("========== Add An Expense ==========");
 
     #region Description
     string? description;
@@ -205,8 +207,6 @@ void AddExpense()
         try
         {
             amount = BudgetRules.ValidateAmount(enteredAmount);
-            Console.WriteLine($"Amount: {amount}");
-
             break;
         }
         catch (InvalidExpenseException ex)
@@ -243,7 +243,7 @@ void AddExpense()
     DateOnly today = DateOnly.FromDateTime(DateTime.Today);
     while (true)
     {
-        Console.WriteLine("Date yyyy-MM-dd (blank = today): ");
+        Console.Write("Date yyyy-MM-dd (blank = today): ");
         string? date = Console.ReadLine();
         if (date is null) return;
 
@@ -304,6 +304,7 @@ void AddExpense()
     }
 
     Console.WriteLine();
+    Console.WriteLine("---------- Expense ----------");
     Console.WriteLine($"Reference: {referenceCode}");
     Console.WriteLine(
     $"Recorded: {BudgetRules.FormatCurrency(amount)} | {category} | {expenseDate:yyyy-MM-dd}");
