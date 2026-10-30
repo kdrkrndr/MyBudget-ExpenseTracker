@@ -53,47 +53,103 @@ do
             AddExpense();
             break;
         case "2":
-            Console.WriteLine("2) View summary"); 
+            ViewSummary();
             break;
         case "3": 
-            monthlyBudget= SetBudget();
+            SetBudget();
             break;
-        case "4": Console.WriteLine("4) Exit");
+        case "4": 
+            Console.WriteLine("4) Exit");
             break;
-        default:  Console.WriteLine("Invalid selection. Please choose 1-4.");
+        default:  
+            Console.WriteLine("Invalid selection. Please choose 1-4.");
             break;
     }
     
 }
 while (selection!="4" && selection != null);
 
-static decimal SetBudget()
+void ViewSummary()
 {
+    Console.WriteLine();
+    Console.WriteLine("========== Expense Summary ==========");
+    Console.WriteLine($"Number of expenses: {expenseCount}");
+    Console.WriteLine($"Total spent: {BudgetRules.FormatCurrency(totalSpent)}");
+
+    if (expenseCount==0)
+    {
+        Console.WriteLine("No expenses recorded yet.");
+    }
+    else
+    {
+        decimal average = totalSpent / expenseCount;
+
+        Console.WriteLine($"Average expense: {BudgetRules.FormatCurrency(average)}");
+        Console.WriteLine($"Highest expense: {BudgetRules.FormatCurrency(highestExpense)}");
+
+    }
+
+    Console.WriteLine();
+    Console.WriteLine("---------- Category Totals ----------");
+
+    Console.WriteLine($"Food:          {BudgetRules.FormatCurrency(foodTotal)}");
+    Console.WriteLine($"Transport:     {BudgetRules.FormatCurrency(transportTotal)}");
+    Console.WriteLine($"Utilities:     {BudgetRules.FormatCurrency(utilitiesTotal)}");
+    Console.WriteLine($"Entertainment: {BudgetRules.FormatCurrency(entertainmentTotal)}");
+    Console.WriteLine($"Other:         {BudgetRules.FormatCurrency(otherTotal)}");
+
+    Console.WriteLine();
+    Console.WriteLine("---------- Monthly Budget ----------");
+
+    if (monthlyBudget is decimal budget)
+    {
+        decimal remaining = budget - totalSpent;
+
+        Console.WriteLine($"Monthly budget: {BudgetRules.FormatCurrency(budget)}");
+        Console.WriteLine($"Remaining: {BudgetRules.FormatCurrency(remaining)}");
+        Console.WriteLine($"Status: {BudgetRules.BudgetStatus(remaining, budget)}");
+    }
+    else
+    {
+        Console.WriteLine("Monthly budget has not been set.");
+    }
+
+    Console.WriteLine("=====================================");
+    Console.WriteLine();
+}
+
+void SetBudget()
+{
+    Console.WriteLine();
     Console.WriteLine("3) Set monthly budget");
 
     while (true)
     {
-        Console.Write("Enter monthly budget: ");
+        Console.Write("Monthly budget: ");
         string? enteredValue = Console.ReadLine();
+        if (enteredValue is null) return;
 
         if (!decimal.TryParse(enteredValue, out decimal budget))
         {
             Console.WriteLine("Invalid number. Please try again.");
+            Console.WriteLine();
             continue;
         }
 
         try
         {
             budget = BudgetRules.ValidateAmount(budget);
+            monthlyBudget = budget;
+            decimal remaining = budget - totalSpent;
+
             string formattedBudget = BudgetRules.FormatCurrency(budget);
-            //decimal remaining = monthlyBudget - totalSpent;
-            //string status = BudgetRules.BudgetStatus(remaining, monthlyBudget);
 
-            Console.WriteLine($"Monthly Budget: {budget}");
+            Console.WriteLine();
             Console.WriteLine($"Budget set to : {formattedBudget}");
-            Console.WriteLine($"Budget: {formattedBudget} remaining of {formattedBudget} -> {BudgetRules.BudgetStatus(budget, budget)}");
+            //Console.WriteLine($"Monthly Budget: {budget}");            
+            Console.WriteLine($"Budget: {BudgetRules.FormatCurrency(remaining)} remaining of {formattedBudget} -> {BudgetRules.BudgetStatus(remaining, budget)}");
 
-            return budget;
+            return;
         }
         catch (InvalidExpenseException ex)
         {
@@ -105,24 +161,35 @@ static decimal SetBudget()
     }
 }
 
- void AddExpense()
+void AddExpense()
 {
+    Console.WriteLine();
     Console.WriteLine("1) Add an expense");
 
+    #region Description
     string? description;
 
     do
     {
-        Console.WriteLine("Description:");
+        Console.WriteLine();
+        Console.Write("Description:");
         description = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(description))
         {
             Console.WriteLine("Description cannot be empty");
-        } 
+            Console.WriteLine();
+
+        }
     } while (string.IsNullOrWhiteSpace(description));
 
-    decimal amount;
+    string cleanedDescription = description.Trim();
+    string prefix = cleanedDescription[..Math.Min(3, cleanedDescription.Length)].ToUpperInvariant();
+    char lastChar = char.ToLowerInvariant(cleanedDescription[^1]);
 
+    #endregion
+
+
+    decimal amount;
     while (true)
     {
         Console.Write("Amount: ");
@@ -130,6 +197,7 @@ static decimal SetBudget()
 
         if (!decimal.TryParse(enteredValue, out decimal enteredAmount))
         {
+
             Console.WriteLine("Invalid number. Please try again.");
             continue;
         }
@@ -145,8 +213,14 @@ static decimal SetBudget()
         {
             Console.WriteLine(ex.Message);
         }
+        finally 
+        {
+            Console.WriteLine(); 
+        }
+
     }
 
+    #region Category
     string? category;
     do
     {
@@ -161,17 +235,21 @@ static decimal SetBudget()
             Console.WriteLine("Invalid category. Please try again.");
         }
 
-    } while (category is null);
+    } while (category is null); 
+    #endregion
 
-
+    #region Date
     DateOnly expenseDate;
-    Console.WriteLine("Date yyyy-MM-dd (blank = today): ");
-    string date= Console.ReadLine();
+    DateOnly today = DateOnly.FromDateTime(DateTime.Today);
     while (true)
     {
+        Console.WriteLine("Date yyyy-MM-dd (blank = today): ");
+        string? date = Console.ReadLine();
+        if (date is null) return;
+
         if (string.IsNullOrEmpty(date))
         {
-            expenseDate = DateOnly.FromDateTime(DateTime.Today);
+            expenseDate = today;
             break;
         }
 
@@ -181,25 +259,30 @@ static decimal SetBudget()
             continue;
         }
 
-        if (expenseDate > DateOnly.FromDateTime(DateTime.Today))
+        if (expenseDate > today)
         {
             Console.WriteLine("Future dates are not allowed.");
             continue;
         }
         break;
     }
+    #endregion
 
+    #region OptionalNote
     Console.Write("Note (optional): ");
     string? note = Console.ReadLine()?.Trim();
+    string safeNote = note ?? "";
 
     if (note is { Length: > 0 })
     {
         Console.WriteLine($"Note: {note}");
-    }
+    } 
+    #endregion
 
     totalSpent += amount;
     expenseCount++;
     highestExpense = Math.Max(highestExpense, amount);
+    string referenceCode = $"{prefix}-{lastChar}--{expenseCount:D3}";
 
     switch (category)
     {
@@ -220,14 +303,16 @@ static decimal SetBudget()
             break;
     }
 
+    Console.WriteLine();
+    Console.WriteLine($"Reference: {referenceCode}");
     Console.WriteLine(
     $"Recorded: {BudgetRules.FormatCurrency(amount)} | {category} | {expenseDate:yyyy-MM-dd}");
 
     Console.WriteLine(
         $"Size band: {BudgetRules.ClassifyAmount(amount)}");
 
-    if (note.Length > 0)
-        Console.WriteLine($"Note: {note}");
+    if (safeNote.Length > 0)
+        Console.WriteLine($"Note: {safeNote}");
 
     if (monthlyBudget is decimal budget)
     {
@@ -235,7 +320,10 @@ static decimal SetBudget()
 
         Console.WriteLine(
             $"Budget: {BudgetRules.FormatCurrency(remaining)} remaining of {BudgetRules.FormatCurrency(budget)} -> {BudgetRules.BudgetStatus(remaining, budget)}");
+        Console.WriteLine();
+
     }
 
     Console.WriteLine();
 }
+
