@@ -34,7 +34,7 @@ namespace MyBudget.Core;
 
         return new OneTimeExpense(
             Guid.NewGuid(),
-            description,
+            description.Trim(),
             validAmount,
             category,
             date
@@ -65,7 +65,7 @@ namespace MyBudget.Core;
 
         return new RecurringExpense(
             Guid.NewGuid(),
-            description,
+            description.Trim(),
             validAmount,
             category,
             date,

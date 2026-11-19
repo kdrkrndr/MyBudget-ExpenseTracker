@@ -11,9 +11,7 @@ public class BudgetService:IBudgetService
     {
         if (limit <= 0)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(limit),
-                "Monthly limit must be greater than zero."
+            throw new InvalidExpenseException("Monthly limit must be greater than zero."
             );
         }
 
